@@ -15,7 +15,7 @@ default_args = {
 }
 
 def start_process():
-    print(" INICIO EL PROCESO!")
+    print(" INICIO EL PROCESO! Prueba con el remoto")
 
 def load_master():
     print(" Load Master!")
