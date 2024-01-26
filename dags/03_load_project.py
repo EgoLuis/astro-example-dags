@@ -25,6 +25,11 @@ def get_connect_mongo():
     client = MongoClient(CONNECTION_STRING)
 
     return client
+
+def transform_date(text):
+    text = str(text)
+    d = text[0:10]
+    return d
     
 def start_process():
     print(" INICIO EL PROCESO!")
@@ -85,10 +90,7 @@ def load_orders():
     orders = collection_name.find({})  
     orders_df = DataFrame(orders)
     dbconnect.close()
-    def transform_date(text):
-        text = str(text)
-        d = text[0:10]
-        return d
+
     orders_df['_id'] = orders_df['_id'].astype(str)
     orders_df['order_date']  = orders_df['order_date'].map(transform_date)
     orders_df['order_date'] = pd.to_datetime(orders_df['order_date'], format='%Y-%m-%d').dt.date
