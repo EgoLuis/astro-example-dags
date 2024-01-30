@@ -20,11 +20,16 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 
-def get_connect_mongo():
+CUSTOMERS_DATAFRAME = None
 
+def get_connect_mongo():
     CONNECTION_STRING ="mongodb+srv://atlas:T6.HYX68T8Wr6nT@cluster0.enioytp.mongodb.net/?retryWrites=true&w=majority"
     client = MongoClient(CONNECTION_STRING)
+    return client
 
+def get_connect_personal_mongo():
+    CONNECTION_STRING ="mongodb+srv://jluisazaa:sdLt4TZ4yk9Z1RXp@cluster0.lnvc5mj.mongodb.net/?retryWrites=true&w=majority"
+    client = MongoClient(CONNECTION_STRING)
     return client
 
 def transform_date(text):
@@ -188,6 +193,7 @@ def load_customers():
     customers_df = DataFrame(customers)
     dbconnect.close()
     customers_df['_id'] = customers_df['_id'].astype(str)
+    CUSTOMERS_DATAFRAME = customers_df
     customers_rows=len(customers_df)
     if customers_rows>0 :
         client = bigquery.Client(project='complete-verve-411815')
@@ -221,6 +227,16 @@ def load_customers():
         )
     else : 
         print('alerta no hay registros en la tabla customers')
+
+def load_mongo():
+    print("INICIO LOAD MONGO")
+    CUSTOMERS_DATAFRAME.reset_index(inplace=False)
+    df_to_dict = CUSTOMERS_DATAFRAME.to_dict("records")
+    connection = get_connect_personal_mongo()
+    dbname= connection['retail_db']
+    dbname["customers"].drop()
+    dbname["customers"].insert_many(df_to_dict)
+    connection.close()
 
 def load_categories():
     print("INICIO LOAD CATEGORIES")
@@ -398,6 +414,11 @@ with DAG(
         python_callable=load_customers,
         dag=dag
     )
+    step_load_mongo = PythonOperator(
+        task_id='load_mongo_id',
+        python_callable=load_mongo,
+        dag=dag
+    )
     step_load_categories = PythonOperator(
         task_id='load_categories_id',
         python_callable=load_categories,
@@ -418,4 +439,4 @@ with DAG(
         python_callable=end_process,
         dag=dag
     )
-    step_start>>step_load_products>>step_load_orders>>step_load_order_items>>step_load_customers>>step_load_categories>>step_load_departments>>step_capa_master>>step_end
+    step_start>>step_load_products>>step_load_orders>>step_load_order_items>>step_load_customers>>step_load_mongo>>step_load_categories>>step_load_departments>>step_capa_master>>step_end
