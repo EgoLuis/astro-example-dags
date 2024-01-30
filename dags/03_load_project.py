@@ -8,6 +8,7 @@ import os
 from pymongo import MongoClient
 from pandas import DataFrame
 from google.cloud import bigquery
+from datetime import date 
 import pandas as pd
 import numpy as np
 
@@ -307,6 +308,17 @@ def load_departments():
     else : 
         print('alerta no hay registros en la tabla departments')
 
+def check_monday():
+    today = date.today()
+    if today.weekday() == 1:
+        return 'load_departments_id'
+    else:
+        return 'not_monday_id'
+    
+def not_monday():
+    print("HOY NO ES LUNES")
+
+
 def capa_master():
     print("INICIO CAPA MASTER")
     client = bigquery.Client(project='complete-verve-411815')
@@ -415,6 +427,16 @@ with DAG(
         python_callable=load_categories,
         dag=dag
     )
+    step_load_check_monday = PythonOperator(
+        task_id='check_monday_id',
+        python_callable=check_monday,
+        dag=dag
+    )
+    step_load_not_monday = PythonOperator(
+        task_id='not_monday_id',
+        python_callable=not_monday,
+        dag=dag
+    )
     step_load_departments = PythonOperator(
         task_id='load_departments_id',
         python_callable=load_departments,
@@ -430,4 +452,4 @@ with DAG(
         python_callable=end_process,
         dag=dag
     )
-    step_start>>step_load_products>>step_load_orders>>step_load_order_items>>step_load_customers>>step_load_categories>>step_load_departments>>step_capa_master>>step_end
+    step_start>>step_load_products>>step_load_orders>>step_load_order_items>>step_load_customers>>step_load_categories>>step_load_check_monday>>[step_load_departments,step_load_not_monday]>>step_capa_master>>step_end
