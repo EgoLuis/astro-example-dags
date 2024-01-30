@@ -453,4 +453,4 @@ with DAG(
         python_callable=end_process,
         dag=dag
     )
-    step_start>>step_load_products>>step_load_orders>>step_load_order_items>>step_load_customers>>step_load_categories>>step_load_check_monday>>[step_load_departments,step_load_not_monday]>>step_capa_master>>step_end
+    step_start>>[step_load_products,step_load_orders,step_load_order_items,step_load_customers,step_load_categories]>>step_load_check_monday>>[step_load_departments,step_load_not_monday]>>step_capa_master>>step_end
