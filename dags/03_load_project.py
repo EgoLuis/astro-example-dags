@@ -430,6 +430,7 @@ with DAG(
     step_load_check_monday = PythonOperator(
         task_id='check_monday_id',
         python_callable=check_monday,
+        provide_context=True,
         dag=dag
     )
     step_load_not_monday = PythonOperator(
