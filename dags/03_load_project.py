@@ -312,7 +312,7 @@ def load_departments():
 
 def check_monday():
     today = date.today()
-    if today.weekday() == 1:
+    if today.weekday() == 0:
         return 'load_departments_id'
     else:
         return 'not_monday_id'
