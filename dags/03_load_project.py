@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.python import BranchPythonOperator 
+from airflow.operators.python import BranchPythonOperator
+from airflow.utils.trigger_rule import TriggerRule
 from airflow.models.connection import Connection
 from time import time_ns
 from datetime import datetime , timedelta
@@ -447,6 +448,7 @@ with DAG(
     step_capa_master = PythonOperator(
         task_id='capa_master_id',
         python_callable=capa_master,
+        trigger_rule=TriggerRule.ALL_DONE,
         dag=dag
     )
     step_end = PythonOperator(
