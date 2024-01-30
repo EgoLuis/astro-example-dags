@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.python import BranchPythonOperator 
 from airflow.models.connection import Connection
 from time import time_ns
 from datetime import datetime , timedelta
@@ -427,7 +428,7 @@ with DAG(
         python_callable=load_categories,
         dag=dag
     )
-    step_load_check_monday = PythonOperator(
+    step_load_check_monday = BranchPythonOperator(
         task_id='check_monday_id',
         python_callable=check_monday,
         provide_context=True,
